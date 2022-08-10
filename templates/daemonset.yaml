@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "cachos-sysctl.name" . }}
+  labels:
+    app: {{ include "cachos-sysctl.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "cachos-sysctl.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "cachos-sysctl.name" . }}
+    spec:
+      containers:
+        - name: {{ include "cachos-sysctl.name" . }}
+          image: 'busybox:latest'
+          resources:
+            limits:
+              cpu: 10m
+              memory: 8Mi
+            requests:
+              cpu: 10m
+              memory: 8Mi
+          securityContext:
+            privileged: true
+          command:
+            - /bin/sh
+            - '-c'
+            - |
+              set -o errexit
+              set -o xtrace
+              while true
+              do
+                sysctl --load={{ .Values.sysctl.sysctl_file | quote }}
+                sleep 60s
+              done
